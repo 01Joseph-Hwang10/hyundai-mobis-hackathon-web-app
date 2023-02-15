@@ -14,7 +14,11 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@hyundai-mobis-hackathon-web-app/firebase": [
+        "libs/firebase/src/index.ts"
+      ]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
