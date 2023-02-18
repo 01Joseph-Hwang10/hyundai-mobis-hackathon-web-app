@@ -1,0 +1,15 @@
+{
+  "name": "emulators",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/emulators",
+  "projectType": "library",
+  "targets": {
+    "run": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd tools/emulators && chmod +x ./run.sh && ./run.sh",
+        "parallel": false
+      }
+    }
+  }
+}

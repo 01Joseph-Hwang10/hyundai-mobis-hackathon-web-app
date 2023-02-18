@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import viteTsConfigPaths from 'vite-tsconfig-paths';
+import path from 'path';
 
 export default defineConfig({
   cacheDir: '../../node_modules/.vite/mobile-app',
@@ -9,6 +10,9 @@ export default defineConfig({
   server: {
     port: 4200,
     host: 'localhost',
+    fs: {
+      allow: [path.resolve(__dirname, '../../node_modules')],
+    },
   },
 
   preview: {
@@ -40,4 +44,6 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
   },
+
+  assetsInclude: ['src/assets/**/*'],
 });

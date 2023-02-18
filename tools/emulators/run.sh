@@ -1,3 +1,3 @@
 #!/bin/bash
 
-firebase emulators:start --import=fixtures
+firebase emulators:start

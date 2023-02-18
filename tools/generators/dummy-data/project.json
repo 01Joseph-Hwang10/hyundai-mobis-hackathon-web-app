@@ -1,0 +1,15 @@
+{
+  "name": "dummy-data",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/generators/dummy-data",
+  "projectType": "library",
+  "targets": {
+    "generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx run constants:build && node tools/generators/dummy-data/index.js",
+        "parallel": false
+      }
+    }
+  }
+}

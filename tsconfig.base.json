@@ -15,9 +15,10 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@hyundai-mobis-hackathon-web-app/firebase": [
-        "libs/firebase/src/index.ts"
-      ]
+      "@hyundai-mobis-hackathon-web-app/components": ["libs/components/src/index.ts"],
+      "@hyundai-mobis-hackathon-web-app/constants": ["libs/constants/src/index.ts"],
+      "@hyundai-mobis-hackathon-web-app/firebase": ["libs/firebase/src/index.ts"],
+      "@hyundai-mobis-hackathon-web-app/utils": ["libs/utils/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

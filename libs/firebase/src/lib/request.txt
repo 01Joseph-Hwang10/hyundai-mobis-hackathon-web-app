@@ -1,0 +1,324 @@
+import firebase from 'firebase';
+
+type CollectionReference<T> = firebase.firestore.CollectionReference<T>;
+type Query<T = unknown> = firebase.firestore.Query<T>;
+type DocumentReference<T = unknown> = firebase.firestore.DocumentReference<T>;
+type Firestore = firebase.firestore.Firestore;
+type FirebaseStorage = firebase.storage.Storage;
+type FirebaseApp = firebase.app.App;
+type DocumentData = firebase.firestore.DocumentData;
+type QuerySnapshot<T> = firebase.firestore.QuerySnapshot<T>;
+
+
+type UNIXTimestamp = number;
+
+export abstract class Entity {
+  id: string;
+  createdAt: UNIXTimestamp;
+
+  constructor(data: Omit<Entity, 'toJSON'>) {
+    this.id = data.id;
+    this.createdAt = data.createdAt;
+  }
+}
+
+export class CollectionUnit<T extends Entity> {
+  constructor(public collection: CollectionReference<T>, private builder: (data: any) => T) {}
+
+  async get(): Promise<T[]> {
+    const snapshot = await this.collection.get();
+    return snapshot.docs.map((doc) => doc.data()).map(this.builder);
+  }
+
+  async filter(query: (collection: CollectionReference<T>) => Query): Promise<T[]> {
+    const snapshot = await query(this.collection).get();
+    return snapshot.docs.map((doc) => doc.data()).map(this.builder);
+  }
+
+  async deleteAll(): Promise<void> {
+    const snapshot = await this.collection.get();
+    await Promise.all(snapshot.docs.map((doc) => doc.ref.delete()));
+  }
+
+  async add(data: T): Promise<DocumentReference<T>> {
+    return this.collection.add(data);
+  }
+
+  async addAll(data: T[]): Promise<DocumentReference<T>[]> {
+    return Promise.all(data.map((datum) => this.collection.add(datum)));
+  }
+}
+
+
+class Snapshot extends Entity {
+  content: string;
+
+  constructor(data: Snapshot) {
+    super(data);
+    this.content = data.content;
+  }
+}
+
+interface IVideo extends Entity {
+  /**
+   * @description
+   * 이 id로 firebase storage에 저장
+   */
+  videoId: string;
+}
+
+class Video extends Entity implements IVideo {
+  videoId: string;
+
+  constructor(data: IVideo, private readonly storage: FirebaseStorage) {
+    super(data);
+    this.videoId = data.videoId;
+  }
+
+  /**
+   * @todo Handle other video formats
+   */
+  async getVideoUrl(): Promise<string> {
+    return this.storage.ref(`videos/${this.videoId}.mp4`).getDownloadURL();
+  }
+}
+
+class Deformation extends Entity {
+  content: string;
+
+  constructor(data: Deformation) {
+    super(data);
+    this.content = data.content;
+  }
+}
+
+interface IVehicleInfo {
+  /**
+   * @description
+   * 차량 고유 번호
+   */
+  carId: string;
+}
+
+class VehicleInfo implements IVehicleInfo {
+  carId: string;
+
+  constructor(data: IVehicleInfo) {
+    this.carId = data.carId;
+  }
+
+  /**
+   * @todo Load real model from server or API
+   */
+  async load() {
+    return;
+  }
+
+  /**
+   * @todo Return real model name
+   */
+  get modelName(): string {
+    return 'Elantra';
+  }
+}
+
+interface VehicleMetrics {
+  /**
+   * @description
+   * 0 ~ 1
+   */
+  batteryLevel: number;
+  /**
+   * @description
+   * Unit in km
+   */
+  maximumRange: number;
+  distanceDriven: number;
+}
+
+interface IVehicle extends Entity {
+  serialCode: string;
+  info: VehicleInfo;
+  metrics: VehicleMetrics;
+  snapshots: CollectionUnit<Snapshot>;
+  videos: CollectionUnit<Video>;
+  deformations: CollectionUnit<Deformation>;
+}
+
+class Vehicle implements IVehicle {
+  id: string;
+  createdAt: number;
+  serialCode: string;
+  info: VehicleInfo;
+  metrics: VehicleMetrics;
+  snapshots: CollectionUnit<Snapshot>;
+  videos: CollectionUnit<Video>;
+  deformations: CollectionUnit<Deformation>;
+
+  constructor(data: IVehicle) {
+    this.id = data.id;
+    this.createdAt = data.createdAt;
+    this.serialCode = data.serialCode;
+    this.info = new VehicleInfo(data.info);
+    this.metrics = data.metrics;
+    this.snapshots = data.snapshots;
+    this.videos = data.videos;
+    this.deformations = data.deformations;
+  }
+
+  static async fromRef(ref: DocumentReference, storage: FirebaseStorage): Promise<Vehicle> {
+    const document = await ref.get();
+    if (!document.exists) {
+      throw new Error("[FirebaseException] Document doesn't exist");
+    }
+    const { serialCode, info, id, createdAt, metrics } = document.data() as IVehicle;
+    return new Vehicle({
+      id,
+      createdAt,
+      serialCode,
+      info,
+      metrics,
+      snapshots: new CollectionUnit(ref.collection('snapshot') as any, (data) => new Snapshot(data)),
+      videos: new CollectionUnit(ref.collection('video') as any, (data) => new Video(data, storage)),
+      deformations: new CollectionUnit(ref.collection('deformation') as any, (data) => new Deformation(data)),
+    });
+  }
+
+  async listSnapshots(options: FilterOptions): Promise<Snapshot[]> {
+    return this.snapshots.filter((collection) => applyFilters(collection, options));
+  }
+
+  async listVideos(options: FilterOptions): Promise<Video[]> {
+    return this.videos.filter((collection) => applyFilters(collection, options));
+  }
+
+  async listDeformations(options: FilterOptions): Promise<Deformation[]> {
+    return this.deformations.filter((collection) => applyFilters(collection, options));
+  }
+
+  async getSnapshot(id: string): Promise<Snapshot> {
+    const snapshots = await this.snapshots.filter((collection) => collection.where('id', '==', id).limit(1));
+    if (snapshots.length === 0) throw new Error(`[FirebaseException] Snapshot with id ${id} doesn't exist`);
+    return snapshots[0];
+  }
+
+  async getVideo(id: string): Promise<Video> {
+    const videos = await this.videos.filter((collection) => collection.where('id', '==', id).limit(1));
+    if (videos.length === 0) throw new Error(`[FirebaseException] Video with id ${id} doesn't exist`);
+    return videos[0];
+  }
+
+  async getDeformation(id: string): Promise<Deformation> {
+    const deformations = await this.deformations.filter((collection) => collection.where('id', '==', id).limit(1));
+    if (deformations.length === 0) throw new Error(`[FirebaseException] Deformation with id ${id} doesn't exist`);
+    return deformations[0];
+  }
+}
+
+
+interface FilterOptions {
+  /**
+   * @description
+   * Order by `createdAt` property.
+   */
+  sort?: 'asc' | 'desc';
+  skip?: number;
+  limit?: number;
+  timerange?: {
+    start?: number;
+    end?: number;
+  };
+  search?: string;
+}
+
+const isDev = () => true;
+
+class FirebaseClient {
+  private app: FirebaseApp;
+
+  constructor(app?: FirebaseApp) {
+    this.app = app;
+
+    if (isDev()) {
+      this.db.useEmulator('localhost', 8080);
+      this.storage.useEmulator('localhost', 9199);
+    }
+  }
+
+  private get db() {
+    return this.app.firestore();
+  }
+
+  private get storage() {
+    return this.app.storage();
+  }
+
+  get vehicle() {
+    return this.db.collection('vehicle');
+  }
+
+  get snapshot() {
+    return this.db.collectionGroup('snapshot');
+  }
+
+  get video() {
+    return this.db.collectionGroup('video');
+  }
+
+  get deformation() {
+    return this.db.collectionGroup('deformation');
+  }
+
+  private async applyFilters<T>(collection: CollectionReference<T> | Query<T>, options: FilterOptions): Query<T> => {
+    let query = collection.orderBy('createdAt', options.sort ?? 'desc');
+    if (options.limit) query = query.limit(options.limit);
+    if (options.skip) query = query.startAfter(options.skip);
+    if (options.timerange?.start) query = query.where('createdAt', '>=', options.timerange.start);
+    if (options.timerange?.end) query = query.where('createdAt', '<=', options.timerange.end);
+    return query;
+  };
+
+  private async queryCollection<T>(collection: CollectionReference<T> | Query<T>, options: FilterOptions): Promise<QuerySnapshot<T>> {
+    const query = await this.applyFilters(collection, options);
+    return query.get();
+  }
+
+  async listVehicles(options: FilterOptions): Promise<Vehicle[]> {
+    const snapshot = await this.queryCollection(this.vehicle, options);
+    let vehicles = await Promise.all(snapshot.docs.map((doc) => Vehicle.fromRef(doc.ref, this.storage)));
+    if (options.search)
+      vehicles = vehicles
+        .filter((vehicle) => vehicle.serialCode.toLowerCase().includes(options.search!.toLowerCase()))
+        .filter((vehicle) => vehicle.info.carId.toLowerCase().includes(options.search!.toLowerCase()));
+    return vehicles;
+  }
+
+  async getVehicle(id: string): Promise<Vehicle> {
+    const snapshot = await this.vehicle.where('id', '==', id).limit(1).get();
+    const ref = snapshot.docs[0].ref;
+    const vehicle = await Vehicle.fromRef(ref, this.storage);
+    return vehicle;
+  }
+
+  async getVehicleBySerialCode(serialCode: string): Promise<Vehicle> {
+    const snapshot = await this.vehicle.where('serialCode', '==', serialCode).limit(1).get();
+    const ref = snapshot.docs[0].ref;
+    const vehicle = await Vehicle.fromRef(ref, this.storage);
+    return vehicle;
+  }
+
+  async listSnapshots(options: FilterOptions): Promise<Snapshot[]> {
+    const snapshot = await this.queryCollection(this.snapshot, options);
+    return snapshot.docs.map((doc) => new Snapshot(doc.data() as any));
+  }
+
+  async listVideos(options: FilterOptions): Promise<Video[]> {
+    const snapshot = await this.queryCollection(this.video, options);
+    return snapshot.docs.map((doc) => new Video(doc.data() as any, this.storage));
+  }
+
+  async listDeformations(options: FilterOptions): Promise<Deformation[]> {
+    const snapshot = await this.queryCollection(this.deformation, options);
+    return snapshot.docs.map((doc) => new Deformation(doc.data() as any));
+  }
+}
