@@ -21,17 +21,9 @@
 
 ## Showcase
 
-### 로그인 화면
-
-![login](./examples/login-page.png)
-
-### 차량 상태 확인 화면
-
-![main](./examples/main-page.png)
-
-### 사고 상황 검색 화면
-
-![search](./examples/search-page.png)
+로그인 화면 | 차량 상태 확인 화면 | 사고 상황 검색 화면
+--- | --- | ---
+<img src="./examples/login-page.png" height="400"> | <img src="./examples/main-page.png" height="400"> | <img src="./examples/search-page.png" height="400">
 
 ## Getting Started
 
