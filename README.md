@@ -1,15 +1,45 @@
 # HyundaiMobisHackathonWebApp
 
-Hyundai mobis hackathon web app
+2023년 현대모비스 해커톤에서 개발한 웹앱입니다.
 
-## Disclaimer
+본 팀의 전체 활동 기록은 [여기](https://tidal-star-7e8.notion.site/1950db1c342b48d2b2c73cafc643ec16?pvs=4)를 참조하세요.
 
-This project is solely built as a prototype, and is not intended for production use.
-There are many unimplemented features that are nessesary for production use,
-and also the code is not optimized well in terms of program speed.
-Use it at your own risk if you want to use it in production.
+## Presentation
+
+아래는 본 해커톤 중간 발표 영상으로, 프로젝트의 대략적인 내용을 파악하는데 도움이 됩니다.
+
+[![presentation](https://img.youtube.com/vi/CbKnctSjMjM/0.jpg)](https://www.youtube.com/watch?v=CbKnctSjMjM)
+
+## 아이디어 기획안 전문
+
+> [!NOTE]\
+> 아이디어 기획안 본문은 [여기](https://docs.google.com/document/d/1Z-Hhk-sO52H874Xqhh9mCVpcY0QspD_g/edit?usp=sharing&ouid=104524476247909893342&rtpof=true&sd=true)를 참조하세요.
+
+자율주행차의 상용화가 현실로 다가오면서, 관련한 정책 및 제도의 정비도 이에 맞추어 발빠르게 진행되고 있습니다. 이 중에서도 특히 보험제도의 경우, 정부에서 지난 12월부터 레벨 4~5단계 완전 자율주행차 보험제도 마련에 착수하였으며, 미래에는 완전 자율주행차의 사고 처리 과정에서 개인보다 제조사의 책임이 부각될 것입니다. 이에 본 팀은 가까운 미래에 현대모비스가 완전 자율주행차 간 사고 처리 과정에서 원인과 책임을 일관적인 방법으로 판단하고, 사고 상황의 데이터를 확보하여 자율주행 알고리즘의 결함을 보완할 수 있는 솔루션을 제안하고자 합니다.
+
+일반적으로 일관적 ∙ 객관적 ∙ 정량적인 차량 상태 평가는 쉽지 않으며, 이로 인해 공업사와 보험사의 차량 피해 평가 및 과실 비율 산정에 대한 기준에 대한 의문이 소비자 입장에서 꾸준히 제기되어 왔습니다. 이와 같은 문제를 해소하고자 대부분의 차량은 블랙박스를 탑재하여 사고상황을 기록하도록 하고 있지만, 블랙박스는 미운행 상황에서 정확한 차량 손상 시점을 파악할 수 없으며, 운행 중 사고 상황에서도 차량의 피해 정도를 파악할 수 없다는 한계점이 존재합니다. 본 팀에서 제공하는 솔루션은 이러한 문제를 해결하기 위해 차량에 strain sensor를 부착하여 실시간으로 변형 정도를 파악하고, 자율주행차에 탑재된 카메라를 활용하여 사고 상황을 360도로 기록합니다. 또한 완전 자율주행차 간 사고는 알고리즘 결함이 주 원인이므로, 사고 당시 시스템 정보를 스냅샷으로 저장하여 디바이스에서의 차량 변형 시각화, 그리고 알고리즘 보완을 위한 메모리 스냅샷을 제공하는 통합 솔루션을 개발하는 것이 목적입니다.
+
+## Showcase
+
+### 로그인 화면
+
+![login](./examples/login-page.png)
+
+### 차량 상태 확인 화면
+
+![main](./examples/main-page.png)
+
+### 사고 상황 검색 화면
+
+![search](./examples/search-page.png)
 
 ## Getting Started
+
+> [!WARNING]\
+> This project is solely built as a prototype, and is not intended for production use.
+> There are many unimplemented features that are nessesary for production use,
+> and also the code is not optimized well in terms of program speed.
+> Use it at your own risk if you want to use it in production.
 
 ```bash
 npm i # Install dependencies

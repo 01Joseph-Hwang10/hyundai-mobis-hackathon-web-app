@@ -1,0 +1,17 @@
+{
+    "name": "HyundaiMobisHackathonWebApp",
+    "short_name": "HyundaiMobisHackathonWebApp",
+    "scope": "/",
+    "start_url": "/login",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#3751FF",
+    "description": "",
+    "icons": [
+        {
+            "src": "/logo.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ]
+}
