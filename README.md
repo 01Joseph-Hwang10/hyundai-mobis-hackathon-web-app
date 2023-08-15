@@ -42,6 +42,13 @@ npx nx run dummy-data:generate # Generate dummy data. More details in below.
 npx nx run mobile-app:serve # Run the mobile app
 ```
 
+## Tech Stack
+
+- React
+- MUI
+- emotion
+- Firebase
+
 ## Notes
 
 ### Display size
